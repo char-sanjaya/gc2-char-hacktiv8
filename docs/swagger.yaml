@@ -1,0 +1,325 @@
+basePath: /
+definitions:
+  dto.CourseResponse:
+    properties:
+      course_id:
+        type: integer
+      credits:
+        type: integer
+      department_id:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.EnrollmentData:
+    properties:
+      course:
+        $ref: '#/definitions/dto.CourseResponse'
+      enrollment_date:
+        type: string
+      enrollment_id:
+        type: integer
+    type: object
+  dto.EnrollmentRequest:
+    properties:
+      course_id:
+        example: 1
+        type: integer
+    type: object
+  dto.EnrollmentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.EnrollmentData'
+      message:
+        type: string
+    type: object
+  dto.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        example: budi@student.ac.id
+        type: string
+      password:
+        example: rahasia123
+        type: string
+    type: object
+  dto.LoginResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+    type: object
+  dto.RegisterRequest:
+    properties:
+      address:
+        example: Jl. Sudirman No. 1, Jakarta
+        type: string
+      date_of_birth:
+        example: "2001-05-14"
+        type: string
+      email:
+        example: budi@student.ac.id
+        type: string
+      first_name:
+        example: Budi
+        type: string
+      last_name:
+        example: Santoso
+        type: string
+      password:
+        example: rahasia123
+        type: string
+    type: object
+  dto.RegisterResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.StudentData'
+      message:
+        type: string
+    type: object
+  dto.StudentData:
+    properties:
+      address:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      student_id:
+        type: integer
+    type: object
+  dto.StudentEnrollmentItem:
+    properties:
+      course_name:
+        type: string
+      enrollment_date:
+        type: string
+      enrollment_id:
+        type: integer
+    type: object
+  dto.StudentMeResponse:
+    properties:
+      address:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      enrollments:
+        items:
+          $ref: '#/definitions/dto.StudentEnrollmentItem'
+        type: array
+      full_name:
+        type: string
+      student_id:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: REST API for managing students, courses, and enrollments.
+  title: University Academic Program API
+  version: "1.0"
+paths:
+  /courses:
+    get:
+      description: Get list of all available courses
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.CourseResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all courses
+      tags:
+      - Courses
+  /enrollments:
+    post:
+      consumes:
+      - application/json
+      description: Enroll the authenticated student into a course
+      parameters:
+      - description: Course ID to enroll
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EnrollmentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.EnrollmentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Enroll in a course
+      tags:
+      - Enrollments
+  /enrollments/{id}:
+    delete:
+      description: Remove a course enrollment belonging to the authenticated student
+      parameters:
+      - description: Enrollment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.EnrollmentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an enrollment
+      tags:
+      - Enrollments
+  /students/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate student and return JWT token
+      parameters:
+      - description: Student login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Student login
+      tags:
+      - Students
+  /students/me:
+    get:
+      description: Retrieve profile details and enrolled courses of the authenticated
+        student
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StudentMeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get logged-in student profile
+      tags:
+      - Students
+  /students/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new student account
+      parameters:
+      - description: Student registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Register a new student
+      tags:
+      - Students
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: authorization
+    type: apiKey
+swagger: "2.0"
