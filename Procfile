@@ -1,1 +1,0 @@
-web: bin/gc2-university-api
